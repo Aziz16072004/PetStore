@@ -3,4 +3,4 @@
  * Centralized configuration for API endpoints
  */
 
-export const API_BASE_URL = 'https://petstore-api-a5j6.onrender.com/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
