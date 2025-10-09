@@ -9,6 +9,7 @@ import uncoloredVector from '../assets/uncoloredVector.png';
 import headerImg from '../assets/header.png';
 import bgHero from '../assets/HomePageImage.png';
 import nesr from '../assets/nesr.png';
+import { API_BASE_URL } from '../config/api';
 
 export default function ShopPage() {
   const [searchParams] = useSearchParams();
@@ -30,7 +31,7 @@ export default function ShopPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('http://localhost:4000/api/items');
+        const response = await fetch(`${API_BASE_URL}/items`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
@@ -240,7 +241,7 @@ export default function ShopPage() {
               Retry
             </button>
           </div>
-          <p className="text-sm text-gray-500">Make sure the API server is running at http://localhost:4000</p>
+          <p className="text-sm text-gray-500">Make sure the API server is running at {API_BASE_URL.replace('/api', '')}</p>
         </div>
       </div>
     );

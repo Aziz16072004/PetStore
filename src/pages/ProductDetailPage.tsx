@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Star, Loader2 } from 'lucide-react';
 import { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { API_BASE_URL } from '../config/api';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +28,7 @@ export default function ProductDetailPage() {
           throw new Error('Invalid product ID');
         }
         
-        const response = await fetch(`http://localhost:4000/api/items/${id}`);
+        const response = await fetch(`${API_BASE_URL}/items/${id}`);
         
         console.log('Response status:', response.status);
         

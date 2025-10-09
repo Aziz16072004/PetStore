@@ -1,7 +1,6 @@
 import { Order, OrderResponse, CheckoutFormData } from '../types/checkout';
 import { CartItem } from '../context/CartContext';
-
-const API_BASE_URL = 'http://localhost:4000/api';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * Create an order from checkout form data and cart items
