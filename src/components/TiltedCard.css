@@ -1,0 +1,96 @@
+.tilted-card-figure {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.tilted-card-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out;
+}
+
+.tilted-card-img {
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+  transition: box-shadow 0.3s ease;
+}
+
+.tilted-card-figure:hover .tilted-card-img {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.tilted-card-caption {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transform-origin: center;
+  z-index: 10;
+}
+
+.tilted-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 5;
+}
+
+.tilted-card-mobile-alert {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff6b6b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 20;
+  white-space: nowrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tilted-card-mobile-alert {
+    display: none;
+  }
+  
+  .tilted-card-caption {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  .tilted-card-img {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Disable 3D effects on mobile for better performance */
+@media (max-width: 768px) {
+  .tilted-card-figure {
+    perspective: none;
+  }
+  
+  .tilted-card-inner {
+    transform-style: flat;
+  }
+}

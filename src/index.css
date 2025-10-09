@@ -1,0 +1,69 @@
+@import "leaflet/dist/leaflet.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.wavebox{
+ 
+ 
+        border-bottom-right-radius: 30.0169% 69.9831%;
+        border-top-left-radius: 59.9873% 59.9958%;
+        border-top-right-radius: 40.0084% 30.0127%;
+        border-bottom-left-radius: 69.9873% 40.0084%;
+    
+        /* border: 1px solid #000; */
+        
+        /* background-color: gray; */
+}
+/* .wavy-box {
+     
+                width: 250px;
+                height: 250px;
+                border-bottom-right-radius: 54.0169% 33%;
+                border-top-left-radius: 70.9873% 50.9958%;
+                border-top-right-radius: 38.0084% 60.0127%;
+                border-bottom-left-radius: 47.9873% 56.0084%;
+                position: relative;
+                overflow: hidden;
+                border: 2px solid #000;
+        }
+        .water {
+                position: absolute;
+                bottom: -20%;
+                left: 0;
+                width: 200%;
+                height: 100%;
+                background: #4facfe;
+                border-radius: 40%;
+                animation: wave 4s infinite linear, rise 5s forwards;
+              }
+              
+              @keyframes wave {
+                0%   { transform: translateX(0) translateY(0); }
+                50%  { transform: translateX(-25%) translateY(5%); }
+                100% { transform: translateX(-50%) translateY(0); }
+              }
+              
+              @keyframes rise {
+                from { bottom: -20%; }
+                to   { bottom: 0%; }
+              } */
+
+.vectorBox {
+        position: relative;
+}
+.vectorBoxImg{
+        position: absolute;
+        width: 145px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+}
+.heroImage{
+        position: relative;
+}
+
+.heroDog{
+        position: relative;
+        z-index: 10;
+}
