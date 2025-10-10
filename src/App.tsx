@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import AboutPage from './pages/AboutPage';
@@ -14,6 +15,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white">
+      <ScrollToTop />
       <Header currentPage={currentPage} />
       <main>
         <Routes>

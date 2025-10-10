@@ -1,8 +1,8 @@
-import { ArrowLeft, ArrowRight, Dog, Fish, Award, Heart } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Dog, Fish, Award, Heart, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
 import ProductCard from '../components/ProductCard';
-import { featuredProducts, bestSellingRow1, bestSellingRow2 } from '../data/products';
+import { bestSellingRow1, bestSellingRow2, Product } from '../data/products';
 import TiltedCard from '../components/TiltedCard';
 import furnitureImg from '../assets/Furniture.jpeg';
 import petsImg from '../assets/cute-pet.png';
@@ -12,16 +12,98 @@ import coloredVector from '../assets/coloredVector.png';
 // import catImg from '../assets/catImage.png';
 import accessoriesImg from '../assets/petsAccessories.jpeg';
 import uncoloredVector from '../assets/uncoloredVector.png';
+import { API_BASE_URL } from '../config/api';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import BlogModal from '../components/BlogModal';
+
+interface BlogPost {
+  _id: string;
+  title: string;
+  excerpt?: string;
+  content?: string;
+  featuredImage: string;
+  author?: string;
+  date: string;
+  category?: string;
+  tags?: string[];
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export default function HomePage() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [errorFeatured, setErrorFeatured] = useState<string | null>(null);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(true);
+  const [errorBlogs, setErrorBlogs] = useState<string | null>(null);
+  const [selectedBlogPost, setSelectedBlogPost] = useState<BlogPost | null>(null);
+  const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleCategoryClick = (categoryName: string) => {
     navigate(`/shop?category=${encodeURIComponent(categoryName)}`);
   };
+
+  // Fetch featured products from API
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        setLoadingFeatured(true);
+        setErrorFeatured(null);
+        const response = await fetch(`${API_BASE_URL}/items/featured/list`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch featured products: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // Normalize product IDs
+        const normalizedProducts = data.map((product: any) => ({
+          ...product,
+          id: product.id || product._id || product.productId
+        }));
+        setFeaturedProducts(normalizedProducts);
+      } catch (err) {
+        setErrorFeatured(err instanceof Error ? err.message : 'Failed to load featured products');
+        console.error('Error fetching featured products:', err);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
+
+  // Fetch blog posts from API
+  useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        setLoadingBlogs(true);
+        setErrorBlogs(null);
+        const response = await fetch(`${API_BASE_URL}/blog/posts`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch blog posts: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // Get only the first 3 posts for home page
+        const posts = Array.isArray(data) ? data.slice(0, 3) : data.posts?.slice(0, 3) || [];
+        setBlogPosts(posts);
+      } catch (err) {
+        setErrorBlogs(err instanceof Error ? err.message : 'Failed to load blog posts');
+        console.error('Error fetching blog posts:', err);
+      } finally {
+        setLoadingBlogs(false);
+      }
+    };
+
+    fetchBlogPosts();
+  }, []);
 
   return (
     <div>
@@ -91,11 +173,28 @@ export default function HomePage() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">Featured products</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredProducts.map((p) => (
-            <ProductCard key={p.id} id={p.id} name={p.name} image={p.image} price={p.price} />
-          ))}
-        </div>
+        
+        {loadingFeatured ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+          </div>
+        ) : errorFeatured ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{errorFeatured}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredProducts.map((p) => (
+              <ProductCard key={p.id} id={p.id} name={p.name} image={p.image} price={p.price} />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -201,6 +300,7 @@ export default function HomePage() {
               showMobileWarning={false}
               showTooltip={false}
               captionText={`Shop ${pet.name}`}
+              onClick={() => navigate(`/shop?petType=${encodeURIComponent(pet.name)}`)}
             >
               <div
                 className="vectorBox cursor-pointer"
@@ -220,39 +320,72 @@ export default function HomePage() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">News & Blog</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="h-64 bg-gradient-to-br from-cyan-400 via-blue-500 to-blue-600 relative">
-              <span className="absolute top-4 left-4 bg-black text-white px-3 py-1 rounded-full text-xs font-medium">
-                8 Dec 18
-              </span>
-            </div>
-            <div className="bg-white p-6">
-              <h3 className="font-bold mb-2">Vitae Cras 18 Mauris Congue None Vitae Nec Tempus Cursus</h3>
-            </div>
+        
+        {loadingBlogs ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
-          <div className="rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="h-64 bg-gradient-to-br from-yellow-300 via-orange-400 to-red-500 relative">
-              <span className="absolute top-4 left-4 bg-black text-white px-3 py-1 rounded-full text-xs font-medium">
-                8 Dec 18
-              </span>
-            </div>
-            <div className="bg-white p-6">
-              <h3 className="font-bold mb-2">Id Tellus Dignissim In Vitae Aliquam, Mollis Sit In Interdum</h3>
-            </div>
+        ) : errorBlogs ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{errorBlogs}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Retry
+            </button>
           </div>
-          <div className="rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="h-64 bg-gradient-to-br from-orange-400 via-red-400 to-pink-500 relative">
-              <span className="absolute top-4 left-4 bg-black text-white px-3 py-1 rounded-full text-xs font-medium">
-                8 Dec 18
-              </span>
-            </div>
-            <div className="bg-white p-6">
-              <h3 className="font-bold mb-2">Maci Cursus Pellentesque Blandit Tortor Suspendisse Ornare</h3>
-            </div>
+        ) : blogPosts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {blogPosts.map((post) => (
+              <div 
+                key={post._id} 
+                className="rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  setSelectedBlogPost(post);
+                  setIsBlogModalOpen(true);
+                }}
+              >
+                <div className="h-64 relative">
+                  <img 
+                    src={post.featuredImage} 
+                    alt={post.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback gradient if image fails to load
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-orange-400', 'via-red-400', 'to-pink-500');
+                    }}
+                  />
+                  <span className="absolute top-4 left-4 bg-black text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {new Date(post.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: '2-digit' })}
+                  </span>
+                </div>
+                <div className="bg-white p-6">
+                  <h3 className="font-bold mb-2 line-clamp-2">{post.title}</h3>
+                  {post.excerpt && (
+                    <p className="text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No blog posts available at the moment.</p>
+          </div>
+        )}
       </section>
+
+      {/* Blog Modal */}
+      <BlogModal 
+        post={selectedBlogPost}
+        isOpen={isBlogModalOpen}
+        onClose={() => {
+          setIsBlogModalOpen(false);
+          setSelectedBlogPost(null);
+        }}
+      />
     </div>
   );
 }

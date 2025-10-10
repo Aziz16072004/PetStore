@@ -60,11 +60,22 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
-  // Apply category filter from URL parameter
+  // Apply category and pet type filters from URL parameters
   useEffect(() => {
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
       setSelectedCategories([categoryParam]);
+    }
+    
+    const petTypeParam = searchParams.get('petType');
+    if (petTypeParam) {
+      setSelectedPetType(petTypeParam);
+      // Find the index of the pet type to set the active index
+      const pets = ['Cat', 'Hamster', 'Dog', 'Parrot', 'Rabbit', 'Turtle'];
+      const petIndex = pets.findIndex(pet => pet === petTypeParam);
+      if (petIndex !== -1) {
+        setActiveIndex(petIndex);
+      }
     }
   }, [searchParams]);
 

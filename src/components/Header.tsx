@@ -1,5 +1,5 @@
 import { Phone, Mail, MapPin, Search, Heart, ShoppingCart, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import CartSidebar from './CartSidebar';
@@ -12,7 +12,22 @@ export default function Header({ currentPage: _ }: HeaderProps) {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { getTotalItems, toggleCart } = useCart();
+
+  // Detect scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <header className="bg-white">
@@ -37,7 +52,9 @@ export default function Header({ currentPage: _ }: HeaderProps) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fixed top-10 z-[1000] bg-white rounded-[50px] lg:rounded-[75px] left-1/2 -translate-x-1/2 w-[90%] sm:w-[85%] lg:w-[80%] shadow-[1px_5px_20px_0px_rgba(105,105,105,0.29)] backdrop-blur-sm">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fixed z-[1000] bg-white rounded-[50px] lg:rounded-[75px] left-1/2 -translate-x-1/2 w-[90%] sm:w-[85%] lg:w-[80%] shadow-[1px_5px_20px_0px_rgba(105,105,105,0.29)] backdrop-blur-sm transition-all duration-300 ${
+        isScrolled ? 'top-2' : 'top-2 lg:top-10'
+      }`}>
         <div className="flex items-center justify-between h-16 lg:h-18">
           <Link to="/" className="flex items-center gap-2 cursor-pointer">
             <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
