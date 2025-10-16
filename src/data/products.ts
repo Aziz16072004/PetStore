@@ -3,6 +3,7 @@ export type Product = {
   name: string;
   price: number;
   image?: string;
+  images?: string[]; // Support for multiple images
   category: string;
   brand: string;
   tags: string[];

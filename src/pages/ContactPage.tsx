@@ -382,7 +382,7 @@ export default function ContactPage() {
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium">8592 Fairground St.Tallahassee, FL 32303</p>
+                  <p className="font-medium">4421 oued guriena , Manouba , Tunis</p>
                 </div>
               </div>
 
@@ -391,7 +391,7 @@ export default function ContactPage() {
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium">rgarton@outlook.com</p>
+                  <p className="font-medium">mouhamedazizchaabani@gmail.com</p>
                 </div>
               </div>
 
@@ -400,7 +400,7 @@ export default function ContactPage() {
                   <Phone className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium">+775 378-6348</p>
+                  <p className="font-medium">+216 50-551-663</p>
                 </div>
               </div>
 

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import CartSidebar from './CartSidebar';
+import logo from '../assets/Group.png';
 
 interface HeaderProps {
   currentPage: string;
@@ -37,56 +38,86 @@ export default function Header({ currentPage: _ }: HeaderProps) {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 " />
-                <span>+379 871-8371</span>
+                <span>+216 50-551-663</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <span>rgarton@outlook.com</span>
+                <span>mouhamedazizchaabani@gmail.com</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              <span>8592 Fairground St. Tallahassee, FL 32303</span>
+              <span>4421 oued guriena , Manouba , Tunis  </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fixed z-[1000] bg-white rounded-[50px] lg:rounded-[75px] left-1/2 -translate-x-1/2 w-[90%] sm:w-[85%] lg:w-[80%] shadow-[1px_5px_20px_0px_rgba(105,105,105,0.29)] backdrop-blur-sm transition-all duration-300 ${
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fixed z-[1000] bg-white/95 backdrop-blur-md rounded-[50px] lg:rounded-[75px] left-1/2 -translate-x-1/2 w-[90%] sm:w-[85%] lg:w-[80%] shadow-soft hover:shadow-card transition-all duration-300 border border-gray-100 ${
         isScrolled ? 'top-2' : 'top-2 lg:top-10'
       }`}>
-        <div className="flex items-center justify-between h-16 lg:h-18">
-          <Link to="/" className="flex items-center gap-2 cursor-pointer">
-            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H9L3 7V9H1V11H3V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V11H23V9H21ZM5 20V11H19V20H5Z"/>
-            </svg>
-            <span className="text-xl font-bold">Pet Shop</span>
+        <div className="flex items-center justify-between h-16 lg:h-20">
+          <Link to="/" className="flex items-center gap-2 cursor-pointer group">
+            <img 
+              src={logo} 
+              alt="Pet Shop Logo" 
+              className="h-8 w-auto transform group-hover:scale-110 transition-transform duration-300"
+            />
+            <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Pet Shop</span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8">
             <Link
               to="/"
-              className={location.pathname === '/' ? 'text-primary font-bold border-b-2 border-primary' : 'hover:text-primary font-semibold'}
+              className={`relative font-semibold transition-all duration-300 ${
+                location.pathname === '/' 
+                  ? 'text-primary' 
+                  : 'text-gray-700 hover:text-primary'
+              }`}
             >
               Home
+              {location.pathname === '/' && (
+                <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full"></span>
+              )}
             </Link>
             <Link
               to="/shop"
-              className={location.pathname === '/shop' ? 'text-primary font-bold border-b-2 border-primary' : 'hover:text-primary font-semibold'}
+              className={`relative font-semibold transition-all duration-300 ${
+                location.pathname === '/shop' 
+                  ? 'text-primary' 
+                  : 'text-gray-700 hover:text-primary'
+              }`}
             >
               Shop
+              {location.pathname === '/shop' && (
+                <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full"></span>
+              )}
             </Link>
             <Link
               to="/about"
-              className={location.pathname === '/about' ? 'text-primary font-bold border-b-2 border-primary' : 'hover:text-primary font-semibold'}
+              className={`relative font-semibold transition-all duration-300 ${
+                location.pathname === '/about' 
+                  ? 'text-primary' 
+                  : 'text-gray-700 hover:text-primary'
+              }`}
             >
               About Us
+              {location.pathname === '/about' && (
+                <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full"></span>
+              )}
             </Link>
             <Link
               to="/contact"
-              className={location.pathname === '/contact' ? 'text-primary font-bold border-b-2 border-primary' : 'hover:text-primary font-semibold'}
+              className={`relative font-semibold transition-all duration-300 ${
+                location.pathname === '/contact' 
+                  ? 'text-primary' 
+                  : 'text-gray-700 hover:text-primary'
+              }`}
             >
               Contact Us
+              {location.pathname === '/contact' && (
+                <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full"></span>
+              )}
             </Link>
           </nav>
 
@@ -104,16 +135,16 @@ export default function Header({ currentPage: _ }: HeaderProps) {
             <button className="p-2 hover:text-primary hidden md:block">
               <Search className="w-5 h-5 md:hidden" />
             </button>
-            <button className="p-2 hover:text-primary relative hidden md:block">
-              <Heart className="w-5 h-5 lg:w-6 lg:h-6" />
+            <button className="p-2 hover:text-primary relative hidden md:block group transition-all duration-300 hover:scale-110">
+              <Heart className="w-5 h-5 lg:w-6 lg:h-6 group-hover:fill-primary transition-all" />
             </button>
             <button 
               onClick={toggleCart}
-              className="p-2 hover:text-orange-500 relative transition-colors"
+              className="p-2 hover:text-orange-500 relative transition-all duration-300 hover:scale-110 group"
             >
-              <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6" />
+              <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6 group-hover:animate-bounce" />
               {getTotalItems() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-primary to-secondary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md animate-scale-in">
                   {getTotalItems()}
                 </span>
               )}

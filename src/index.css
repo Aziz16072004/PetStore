@@ -3,17 +3,23 @@
 @tailwind components;
 @tailwind utilities;
 
-.wavebox{
- 
- 
-        border-bottom-right-radius: 30.0169% 69.9831%;
-        border-top-left-radius: 59.9873% 59.9958%;
-        border-top-right-radius: 40.0084% 30.0127%;
-        border-bottom-left-radius: 69.9873% 40.0084%;
-    
-        /* border: 1px solid #000; */
-        
-        /* background-color: gray; */
+/* Smooth scrolling */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased;
+  }
+}
+
+/* Custom wavy shape */
+.wavebox {
+  border-bottom-right-radius: 30.0169% 69.9831%;
+  border-top-left-radius: 59.9873% 59.9958%;
+  border-top-right-radius: 40.0084% 30.0127%;
+  border-bottom-left-radius: 69.9873% 40.0084%;
 }
 /* .wavy-box {
      
@@ -63,7 +69,41 @@
         position: relative;
 }
 
-.heroDog{
-        position: relative;
-        z-index: 10;
+.heroDog {
+  position: relative;
+  z-index: 10;
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+  
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-glow;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl border border-gray-100 hover:border-primary/20 transition-all duration-300 hover:shadow-card;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300;
+  }
 }

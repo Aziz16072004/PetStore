@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Play } from 'lucide-react';
 import headerImg from '../assets/vecteezy_adorable-fluffy-kitten-high-quality-transparent-for-pet-lovers_58289536.png';
 import bgHero from '../assets/HomePageImage.png';
 import nesr from '../assets/nesr.png';
+import pawPattern from '../assets/Shapes+ pattern(paws)+img.png';
 export default function AboutPage() {
   return (
     <div>
@@ -141,8 +142,9 @@ export default function AboutPage() {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary rounded-full transform scale-90 opacity-80"></div>
-            <div className="relative z-10 flex items-center justify-center h-96"></div>
+            <div className="relative z-10 flex items-center justify-center h-100">
+              <img src={pawPattern} alt="Paw pattern" className="w-90 h-90 object-cover rounded-full" />
+            </div>
           </div>
         </div>
       </section>

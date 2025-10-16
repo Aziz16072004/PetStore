@@ -115,14 +115,17 @@ export default function HomePage() {
         onButtonClick={() => window.location.href = '/shop'}
       />
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Browse by category</h2>
-          <div className="flex gap-2">
-            <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="flex justify-between items-center mb-12">
+          <div>
+            <h2 className="text-4xl font-display font-bold mb-2 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Browse by category</h2>
+            <p className="text-gray-600">Find everything your pet needs</p>
+          </div>
+          <div className="flex gap-3">
+            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800">
+            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
@@ -159,11 +162,13 @@ export default function HomePage() {
               captionText={item.title}
               onClick={() => handleCategoryClick(item.title)}
             >
-              <div className="rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
-                <img src={item.img} alt={item.title} className="w-full h-48 object-contain" />
-                <div className="bg-white p-4">
-                  <h3 className="font-bold mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.count}</p>
+              <div className="rounded-2xl overflow-hidden cursor-pointer hover:shadow-card transition-all duration-300 border border-gray-100 hover:border-primary/30 group">
+                <div className="overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                  <img src={item.img} alt={item.title} className="w-full h-48 object-contain group-hover:scale-110 transition-transform duration-500" />
+                </div>
+                <div className="bg-white p-5">
+                  <h3 className="font-bold mb-1 text-lg group-hover:text-primary transition-colors">{item.title}</h3>
+                  <p className="text-sm text-gray-500">{item.count}</p>
                 </div>
               </div>
             </TiltedCard>
@@ -171,8 +176,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Featured products</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Featured products</h2>
+          <p className="text-gray-600 text-lg">Handpicked favorites for your furry friends</p>
+        </div>
         
         {loadingFeatured ? (
           <div className="flex justify-center items-center py-12">
@@ -197,62 +205,68 @@ export default function HomePage() {
         )}
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-[#FE8F90] rounded-full transform scale-90 opacity-80"></div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-br from-orange-50/50 to-transparent rounded-3xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="relative animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FE8F90] to-[#FBA81F] rounded-full transform scale-90 opacity-60 blur-2xl animate-pulse"></div>
             <div className="relative z-10 flex items-center justify-center">
               
-                <img src={petsImg} alt="Hero" className="w-full h-full object-contain" />
+                <img src={petsImg} alt="Hero" className="w-full h-full object-contain drop-shadow-2xl animate-float" />
                
                
               
             </div>
           </div>
 
-          <div>
-            <div className="text-primary font-medium mb-4">Why choose us</div>
-            <h2 className="text-4xl font-bold mb-6">The smarter way to shop for your pet</h2>
-            <p className="text-gray-600 mb-8">
+          <div className="animate-slide-up">
+            <div className="inline-block text-primary font-semibold mb-4 px-4 py-2 bg-orange-100 rounded-full text-sm">Why choose us</div>
+            <h2 className="text-4xl lg:text-5xl font-display font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">The smarter way to shop for your pet</h2>
+            <p className="text-gray-600 mb-8 text-lg leading-relaxed">
               At et vehicula sodales est proin turpis pellentesque situlla a aliquam amet. Semper quis neque pederantesque nec et facilisis neque predenteresque similia a dinguam tempor sociis oquet eget
             </p>
-            <button className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium">
+            <button className="group bg-gradient-to-r from-gray-900 to-gray-800 text-white px-8 py-4 rounded-xl hover:shadow-lg transition-all duration-300 font-semibold transform hover:scale-105 flex items-center gap-2">
               Learn More
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mt-16">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-              <Fish className="w-8 h-8 text-primary" />
+          <div className="flex flex-col items-center text-center group">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-4 group-hover:shadow-glow transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-6">
+              <Fish className="w-10 h-10 text-primary" />
             </div>
           </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-              <Dog className="w-8 h-8 text-primary" />
+          <div className="flex flex-col items-center text-center group">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-4 group-hover:shadow-glow transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-6">
+              <Dog className="w-10 h-10 text-primary" />
             </div>
           </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-              <Heart className="w-8 h-8 text-primary" />
+          <div className="flex flex-col items-center text-center group">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-4 group-hover:shadow-glow transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-6">
+              <Heart className="w-10 h-10 text-primary" />
             </div>
           </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-              <Award className="w-8 h-8 text-primary" />
+          <div className="flex flex-col items-center text-center group">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-4 group-hover:shadow-glow transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-6">
+              <Award className="w-10 h-10 text-primary" />
             </div>
           </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-              <Heart className="w-8 h-8 text-primary" />
+          <div className="flex flex-col items-center text-center group">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-4 group-hover:shadow-glow transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-6">
+              <Heart className="w-10 h-10 text-primary" />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Best selling products</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Best selling products</h2>
+          <p className="text-gray-600 text-lg">Customer favorites that pets love</p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           {bestSellingRow1.map((p) => (
             <ProductCard key={p.id} id={p.id} name={p.name} price={p.price} />
@@ -265,14 +279,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Shop by pet</h2>
-          <div className="flex gap-2">
-            <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="flex justify-between items-center mb-12">
+          <div>
+            <h2 className="text-4xl font-display font-bold mb-2 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Shop by pet</h2>
+            <p className="text-gray-600">Find products for your specific pet</p>
+          </div>
+          <div className="flex gap-3">
+            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800">
+            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
@@ -318,8 +335,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">News & Blog</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">News & Blog</h2>
+          <p className="text-gray-600 text-lg">Latest tips and stories for pet lovers</p>
+        </div>
         
         {loadingBlogs ? (
           <div className="flex justify-center items-center py-12">
@@ -336,35 +356,35 @@ export default function HomePage() {
             </button>
           </div>
         ) : blogPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {blogPosts.map((post) => (
               <div 
                 key={post._id} 
-                className="rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                className="rounded-2xl overflow-hidden hover:shadow-card transition-all duration-300 cursor-pointer border border-gray-100 hover:border-primary/20 transform hover:-translate-y-2 group"
                 onClick={() => {
                   setSelectedBlogPost(post);
                   setIsBlogModalOpen(true);
                 }}
               >
-                <div className="h-64 relative">
+                <div className="h-64 relative overflow-hidden">
                   <img 
                     src={post.featuredImage} 
                     alt={post.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => {
                       // Fallback gradient if image fails to load
                       e.currentTarget.style.display = 'none';
                       e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-orange-400', 'via-red-400', 'to-pink-500');
                     }}
                   />
-                  <span className="absolute top-4 left-4 bg-black text-white px-3 py-1 rounded-full text-xs font-medium">
+                  <span className="absolute top-4 left-4 bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg">
                     {new Date(post.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: '2-digit' })}
                   </span>
                 </div>
                 <div className="bg-white p-6">
-                  <h3 className="font-bold mb-2 line-clamp-2">{post.title}</h3>
+                  <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">{post.title}</h3>
                   {post.excerpt && (
-                    <p className="text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
+                    <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{post.excerpt}</p>
                   )}
                 </div>
               </div>

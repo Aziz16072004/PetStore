@@ -14,6 +14,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Fetch product from API
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function ProductDetailPage() {
         };
         
         setProduct(normalizedProduct);
+        setSelectedImageIndex(0); // Reset to first image when product changes
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load product');
         console.error('Error fetching product:', err);
@@ -130,11 +132,38 @@ export default function ProductDetailPage() {
             {/* Main Image */}
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
               <img
-                src={product.image || '/api/placeholder/600/600'}
+                src={
+                  product.images && product.images.length > 0
+                    ? product.images[selectedImageIndex]
+                    : product.image || '/api/placeholder/600/600'
+                }
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
+            
+            {/* Thumbnail Gallery */}
+            {product.images && product.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImageIndex === index
+                        ? 'border-orange-500 ring-2 ring-orange-200'
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`${product.name} - Image ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Details */}
