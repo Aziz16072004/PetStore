@@ -2,7 +2,7 @@ import { MapPin, Mail, Phone, Clock, Send, CheckCircle, AlertCircle, Loader2, Pa
 import { useEffect, useState } from 'react';
 import headerImg from '../assets/vecteezy_hamster-with_24704812.png';
 import bgHero from '../assets/HomePageImage.png';
-import MapView from '../components/MapView.tsx';
+import contactMapImage from '../assets/image.png';
 import nesr from '../assets/nesr.png';
 import { API_BASE_URL } from '../config/api';
 
@@ -435,7 +435,28 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-      <MapView/>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="relative w-full h-96 rounded-2xl overflow-hidden shadow-lg">
+          <img 
+            src={contactMapImage} 
+            alt="Our location" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <a
+              href="https://maps.app.goo.gl/LPSs63GWSbvspWTu5"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open location in Google Maps"
+              className="group"
+            >
+              <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg animate-bounce transition-transform group-hover:scale-110">
+                <MapPin className="w-6 h-6" />
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
       
     </div>
   );

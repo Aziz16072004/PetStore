@@ -69,6 +69,8 @@ export default function HomePage() {
   const navigate = useNavigate();
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const petScrollRef = useRef<HTMLDivElement>(null);
+  const featuredScrollRef = useRef<HTMLDivElement>(null);
+  const bestSellingScrollRef = useRef<HTMLDivElement>(null);
 
   const handleCategoryClick = (categoryName: string) => {
     navigate(`/shop?category=${encodeURIComponent(categoryName)}`);
@@ -96,6 +98,34 @@ export default function HomePage() {
         : petScrollRef.current.scrollLeft + scrollAmount;
       
       petScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollFeatured = (direction: 'left' | 'right') => {
+    if (featuredScrollRef.current) {
+      const scrollAmount = 400;
+      const newScrollLeft = direction === 'left'
+        ? featuredScrollRef.current.scrollLeft - scrollAmount
+        : featuredScrollRef.current.scrollLeft + scrollAmount;
+      
+      featuredScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollBestSelling = (direction: 'left' | 'right') => {
+    if (bestSellingScrollRef.current) {
+      const scrollAmount = 400;
+      const newScrollLeft = direction === 'left'
+        ? bestSellingScrollRef.current.scrollLeft - scrollAmount
+        : bestSellingScrollRef.current.scrollLeft + scrollAmount;
+      
+      bestSellingScrollRef.current.scrollTo({
         left: newScrollLeft,
         behavior: 'smooth'
       });
@@ -353,9 +383,27 @@ export default function HomePage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Featured products</h2>
-          <p className="text-gray-600 text-lg">Handpicked favorites for your furry friends</p>
+        <div className="flex justify-between items-center mb-12">
+          <div className="text-center flex-1">
+            <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Featured products</h2>
+            <p className="text-gray-600 text-lg">Handpicked favorites for your furry friends</p>
+          </div>
+          {featuredProducts.length > 3 && (
+            <div className="hidden lg:flex gap-3">
+              <button 
+                onClick={() => scrollFeatured('left')}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => scrollFeatured('right')}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
         
         {loadingFeatured ? (
@@ -373,9 +421,22 @@ export default function HomePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div 
+            ref={featuredScrollRef}
+            className={`${
+              featuredProducts.length > 3 
+                ? 'flex overflow-x-auto gap-6 pb-4 scrollbar-hide scroll-smooth' 
+                : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+            }`}
+            style={featuredProducts.length > 3 ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}
+          >
             {featuredProducts.map((p) => (
-              <ProductCard key={p.id} id={p.id} name={p.name} image={p.image} price={p.price} stock={p.stock} />
+              <div 
+                key={p.id}
+                className={featuredProducts.length > 3 ? 'flex-shrink-0 w-80' : ''}
+              >
+                <ProductCard id={p.id} name={p.name} image={p.image} price={p.price} stock={p.stock} />
+              </div>
             ))}
           </div>
         )}
@@ -439,9 +500,27 @@ export default function HomePage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Best selling products</h2>
-          <p className="text-gray-600 text-lg">Customer favorites that pets love</p>
+        <div className="flex justify-between items-center mb-12">
+          <div className="text-center flex-1">
+            <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Best selling products</h2>
+            <p className="text-gray-600 text-lg">Customer favorites that pets love</p>
+          </div>
+          {bestSellingProducts.length > 3 && (
+            <div className="hidden lg:flex gap-3">
+              <button 
+                onClick={() => scrollBestSelling('left')}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => scrollBestSelling('right')}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
         
         {loadingBestSelling ? (
@@ -459,16 +538,28 @@ export default function HomePage() {
             </button>
           </div>
         ) : bestSellingProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div 
+            ref={bestSellingScrollRef}
+            className={`${
+              bestSellingProducts.length > 3 
+                ? 'flex overflow-x-auto gap-6 pb-4 scrollbar-hide scroll-smooth' 
+                : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+            }`}
+            style={bestSellingProducts.length > 3 ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}
+          >
             {bestSellingProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                id={product.id} 
-                name={product.name} 
-                price={product.price}
-                image={product.image}
-                stock={product.stock}
-              />
+              <div 
+                key={product.id}
+                className={bestSellingProducts.length > 3 ? 'flex-shrink-0 w-80' : ''}
+              >
+                <ProductCard 
+                  id={product.id} 
+                  name={product.name} 
+                  price={product.price}
+                  image={product.image}
+                  stock={product.stock}
+                />
+              </div>
             ))}
           </div>
         ) : (
@@ -517,7 +608,7 @@ export default function HomePage() {
         ) : petCategories.length > 0 ? (
           <div 
             ref={petScrollRef}
-            className="flex overflow-x-auto gap-6 pb-4 pt-4 scrollbar-hide scroll-smooth"
+            className="flex overflow-x-auto overflow-y-hidden gap-6 pb-4 pt-4 scrollbar-hide scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {petCategories.map((pet, index) => (

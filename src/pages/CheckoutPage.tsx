@@ -1,8 +1,9 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { ShoppingBag, CreditCard, MapPin, User, Mail, Phone, ArrowLeft } from 'lucide-react';
 import { submitOrder } from '../services/orderService';
+import { API_BASE_URL } from '../config/api';
 import { CheckoutFormData } from '../types/checkout';
 
 export default function CheckoutPage() {
@@ -12,6 +13,29 @@ export default function CheckoutPage() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top when Order Successful page is shown
+  useEffect(() => {
+    if (orderComplete) {
+      // Try scrolling common containers
+      try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      } catch {}
+      // Also schedule a follow-up after paint
+      try {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      } catch {}
+      // Use ref-based scroll for nested containers
+      try {
+        topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch {}
+    }
+  }, [orderComplete]);
 
   // Form state
   const [formData, setFormData] = useState<CheckoutFormData>({
@@ -113,6 +137,35 @@ export default function CheckoutPage() {
       // Response is always successful if no error was thrown
       setOrderId(response.orderId);
       setOrderComplete(true);
+
+      // Immediate best-effort scroll to top
+      try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      } catch {}
+      try {
+        topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch {}
+
+      // Create notification for new order (best-effort)
+      try {
+        await fetch(`${API_BASE_URL}/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: 'New order created',
+            message: `Order #${response.orderId} has been created`,
+            type: 'success',
+            orderId: response.orderId,
+            read: false,
+          }),
+        });
+      } catch (e) {
+        // Non-blocking: log and continue
+        console.error('Failed to create notification:', e);
+      }
+
       clearCart();
     } catch (error) {
       console.error('Order submission error:', error);
@@ -148,8 +201,8 @@ export default function CheckoutPage() {
   // Order complete screen
   if (orderComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-lg">
+      <div ref={topRef} className="min-h-screen bg-gray-50 px-4 pt-24 md:pt-28 lg:pt-32">
+        <div className="mx-auto max-w-md bg-white p-8 rounded-lg shadow-lg text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

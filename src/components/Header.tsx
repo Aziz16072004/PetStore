@@ -33,6 +33,24 @@ export default function Header({ currentPage: _ }: HeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Handle search
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setMobileMenuOpen(false);
+    }
+  };
+
+  // Handle search on Enter key
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <header className="bg-white">
       <div className="bg-gray-50  hidden lg:block ">
@@ -131,16 +149,20 @@ export default function Header({ currentPage: _ }: HeaderProps) {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary w-40 lg:w-64"
+                onKeyPress={handleKeyPress}
+                className="pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary w-40 lg:w-64 transition-all"
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <button
+                onClick={() => handleSearch()}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 hover:text-primary transition-colors"
+                type="button"
+              >
+                <Search className="w-5 h-5 text-gray-400 hover:text-primary" />
+              </button>
             </div>
-            <button className="p-2 hover:text-primary hidden md:block">
-              <Search className="w-5 h-5 md:hidden" />
-            </button>
             <button 
               onClick={() => navigate('/wishlist')}
-              className="p-2 hover:text-primary relative hidden md:block group transition-all duration-300 hover:scale-110"
+              className="p-2 hover:text-primary relative group transition-all duration-300 hover:scale-110"
             >
               <Heart className="w-5 h-5 lg:w-6 lg:h-6 group-hover:fill-primary transition-all" />
               {wishlistItems.length > 0 && (
@@ -222,6 +244,22 @@ export default function Header({ currentPage: _ }: HeaderProps) {
                 }`}
               >
                 Contact Us
+              </Link>
+              <Link
+                to="/wishlist"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`text-left py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-between ${
+                  location.pathname === '/wishlist' 
+                    ? 'bg-primary text-white font-medium shadow-md' 
+                    : 'hover:bg-gray-50 hover:text-primary'
+                }`}
+              >
+                <span>Wishlist</span>
+                {wishlistItems.length > 0 && (
+                  <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-md">
+                    {wishlistItems.length}
+                  </span>
+                )}
               </Link>
             </nav>
           </div>

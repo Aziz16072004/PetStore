@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Star, Loader2 } from 'lucide-react';
+import { ArrowLeft, Heart, Star, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -17,6 +17,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Fetch product from API
   useEffect(() => {
@@ -96,6 +98,56 @@ export default function ProductDetailPage() {
     }
   };
 
+  // Get all available images
+  const allImages = product?.images && product.images.length > 0 
+    ? product.images 
+    : product?.image 
+    ? [product.image] 
+    : [];
+
+  // Navigate to next image
+  const handleNextImage = () => {
+    if (allImages.length > 1) {
+      setSelectedImageIndex((prev) => (prev + 1) % allImages.length);
+    }
+  };
+
+  // Navigate to previous image
+  const handlePrevImage = () => {
+    if (allImages.length > 1) {
+      setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    }
+  };
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  // Handle touch start
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  // Handle touch move
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  // Handle touch end
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      handleNextImage();
+    } else if (isRightSwipe) {
+      handlePrevImage();
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -146,29 +198,54 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Gallery */}
           <div className="space-y-4">
-            {/* Main Image */}
-            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            {/* Main Image with Slider Controls */}
+            <div 
+              className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden group"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            >
               <img
-                src={
-                  product.images && product.images.length > 0
-                    ? product.images[selectedImageIndex]
-                    : product.image || '/api/placeholder/600/600'
-                }
+                src={allImages.length > 0 ? allImages[selectedImageIndex] : '/api/placeholder/600/600'}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 select-none"
+                draggable="false"
               />
+              
+              {/* Navigation Arrows - Only show if multiple images */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-gray-800" />
+                  </button>
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+                  >
+                    <ChevronRight className="w-6 h-6 text-gray-800" />
+                  </button>
+                  
+                  {/* Image Counter */}
+                  <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {selectedImageIndex + 1} / {allImages.length}
+                  </div>
+                </>
+              )}
             </div>
             
             {/* Thumbnail Gallery */}
-            {product.images && product.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-3">
-                {product.images.map((img, index) => (
+            {allImages.length > 1 && (
+              <div className="grid grid-cols-5 gap-3">
+                {allImages.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all transform hover:scale-105 ${
                       selectedImageIndex === index
-                        ? 'border-orange-500 ring-2 ring-orange-200'
+                        ? 'border-orange-500 ring-2 ring-orange-200 scale-105'
                         : 'border-transparent hover:border-gray-300'
                     }`}
                   >

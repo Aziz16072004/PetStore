@@ -38,6 +38,11 @@ export default function ShopPage() {
   const [loadingPets, setLoadingPets] = useState(true);
   const [errorPets, setErrorPets] = useState<string | null>(null);
   const petScrollRef = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 15; // 5 rows × 3 columns on large screens
+  const [bestSellingProducts, setBestSellingProducts] = useState<Product[]>([]);
+  const [loadingBestSelling, setLoadingBestSelling] = useState(true);
 
   // Fetch products from API
   useEffect(() => {
@@ -99,7 +104,39 @@ export default function ShopPage() {
     fetchPetCategories();
   }, []);
 
-  // Apply category and pet type filters from URL parameters
+  // Fetch best-selling products from API
+  useEffect(() => {
+    const fetchBestSellingProducts = async () => {
+      try {
+        setLoadingBestSelling(true);
+        const response = await fetch(`${API_BASE_URL}/items/best-selling/list?limit=5`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch best-selling products: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const products = Array.isArray(data) ? data : data.products || data.items || [];
+        
+        // Normalize product IDs and limit to 5
+        const normalizedProducts = products.slice(0, 5).map((product: any) => ({
+          ...product,
+          id: product.id || product._id || product.productId
+        }));
+        
+        setBestSellingProducts(normalizedProducts);
+      } catch (err) {
+        console.error('Error fetching best-selling products:', err);
+        setBestSellingProducts([]);
+      } finally {
+        setLoadingBestSelling(false);
+      }
+    };
+
+    fetchBestSellingProducts();
+  }, []);
+
+  // Apply category, pet type, and search filters from URL parameters
   useEffect(() => {
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
@@ -114,6 +151,15 @@ export default function ShopPage() {
       if (petIndex !== -1) {
         setActiveIndex(petIndex);
       }
+    }
+
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+      // Scroll to products section when searching
+      setTimeout(() => {
+        productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   }, [searchParams, petCategories]);
 
@@ -152,16 +198,20 @@ export default function ShopPage() {
     return Array.from(tagSet).sort();
   }, [allProducts]);
 
-  // Get popular products (top rated)
+  // Display best-selling products in sidebar
   const popularProducts = useMemo(() => {
-    return allProducts
-      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      .slice(0, 5)
-      .map(product => ({
-        name: product.name,
-        price: `$${product.price.toFixed(2)}`
-      }));
-  }, [allProducts]);
+    return bestSellingProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      price: `$${product.price.toFixed(2)}`,
+      image: product.image
+    }));
+  }, [bestSellingProducts]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, priceRange, selectedPetType, selectedCategories, selectedBrands, selectedTags, sortBy]);
 
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
@@ -221,6 +271,53 @@ export default function ShopPage() {
 
     return filtered;
   }, [allProducts, searchQuery, priceRange, selectedPetType, selectedCategories, selectedBrands, selectedTags, sortBy]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = startIndex + productsPerPage;
+  const currentProducts = filteredAndSortedProducts.slice(startIndex, endIndex);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to products section
+    if (productsRef.current) {
+      productsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   // Handle category selection
   const handleCategoryChange = (categoryName: string, checked: boolean) => {
@@ -375,7 +472,7 @@ export default function ShopPage() {
         ) : petCategories.length > 0 ? (
           <div 
             ref={petScrollRef}
-            className="flex overflow-x-auto gap-6 pb-4 pt-4 scrollbar-hide scroll-smooth"
+            className="flex overflow-x-auto overflow-y-hidden gap-6 pb-4 pt-4 scrollbar-hide scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {petCategories.map((pet, index) => (
@@ -420,11 +517,11 @@ export default function ShopPage() {
         )}
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section ref={productsRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
             <p className="text-gray-600">
-              Showing {filteredAndSortedProducts.length} results
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} results
             </p>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -542,25 +639,39 @@ export default function ShopPage() {
             </div>
 
             <div className="bg-white rounded-lg p-6">
-              <h3 className="font-bold mb-4">Popular products</h3>
-              <div className="space-y-4">
-                {popularProducts.map((product, idx) => (
-                  <div key={idx} className="flex gap-3">
-                    <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0"></div>
-                    <div>
-                      <h4 className="font-medium text-sm mb-1">{product.name}</h4>
-                      <p className="text-orange-500 font-bold text-sm">{product.price}</p>
+              <h3 className="font-bold mb-4">Best Selling Products</h3>
+              {loadingBestSelling ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+                </div>
+              ) : popularProducts.length > 0 ? (
+                <div className="space-y-4">
+                  {popularProducts.map((product) => (
+                    <div key={product.id} className="flex gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors" onClick={() => window.location.href = `/product/${product.id}`}>
+                      <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-1 line-clamp-2">{product.name}</h4>
+                        <p className="text-orange-500 font-bold text-sm">{product.price}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No best-selling products available.</p>
+              )}
             </div>
           </div>
 
           <div className="lg:col-span-3">
-            {filteredAndSortedProducts.length > 0 ? (
+            {currentProducts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {filteredAndSortedProducts.map((product) => (
+                {currentProducts.map((product) => (
                   <ProductCard
                     key={product.id}
                     name={product.name}
@@ -589,29 +700,57 @@ export default function ShopPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <button className="w-10 h-10 rounded bg-orange-500 text-white flex items-center justify-center font-medium">
-                  1
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between">
+                <button 
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-6 py-2 border rounded transition-colors ${
+                    currentPage === 1
+                      ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'border-gray-300 hover:border-orange-500 hover:text-orange-500'
+                  }`}
+                >
+                  ← Previous
                 </button>
-                <button className="w-10 h-10 rounded border border-gray-300 flex items-center justify-center hover:border-orange-500">
-                  2
+                <div className="flex gap-2">
+                  {getPageNumbers().map((page, index) => (
+                    page === '...' ? (
+                      <span key={`ellipsis-${index}`} className="w-10 h-10 flex items-center justify-center text-gray-400">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page as number)}
+                        className={`w-10 h-10 rounded flex items-center justify-center font-medium transition-colors ${
+                          currentPage === page
+                            ? 'bg-orange-500 text-white'
+                            : 'border border-gray-300 hover:border-orange-500 hover:text-orange-500'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  ))}
+                </div>
+                <button 
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-6 py-2 border rounded transition-colors ${
+                    currentPage === totalPages
+                      ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'border-gray-300 hover:border-orange-500 hover:text-orange-500'
+                  }`}
+                >
+                  Next →
                 </button>
               </div>
-              <button className="px-6 py-2 border border-gray-300 rounded hover:border-orange-500">
-                Next →
-              </button>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-64 rounded-lg bg-gradient-to-br from-cyan-300 via-teal-300 to-blue-400"></div>
-          <div className="h-64 rounded-lg bg-gradient-to-br from-purple-300 via-pink-300 to-purple-400"></div>
-        </div>
-      </section>
     </div>
   );
 }
