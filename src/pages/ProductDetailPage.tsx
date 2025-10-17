@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Star, Loader2 } from 'lucide-react';
 import { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { API_BASE_URL } from '../config/api';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,16 +68,31 @@ export default function ProductDetailPage() {
 
   const handleQuantityChange = (change: number) => {
     const newQuantity = quantity + change;
-    if (newQuantity >= 1) {
+    const maxStock = product?.stock || 999;
+    if (newQuantity >= 1 && newQuantity <= maxStock) {
       setQuantity(newQuantity);
     }
   };
 
   const handleAddToCart = () => {
-    if (product) {
+    if (product && product.stock !== 0) {
       addToCart(product, quantity);
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2000);
+    }
+  };
+
+  const isOutOfStock = product?.stock === 0;
+  const isLowStock = product?.stock !== undefined && product.stock > 0 && product.stock <= 10;
+  const inWishlist = product ? isInWishlist(product.id) : false;
+
+  const handleToggleWishlist = () => {
+    if (product) {
+      if (inWishlist) {
+        removeFromWishlist(product.id);
+      } else {
+        addToWishlist(product);
+      }
     }
   };
 
@@ -192,9 +209,31 @@ export default function ProductDetailPage() {
               )}
 
               {/* Price */}
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
                 <span className="text-3xl font-bold text-orange-500">${product.price.toFixed(2)}</span>
               </div>
+
+              {/* Stock Status */}
+              {product.stock !== undefined && (
+                <div className="mb-6">
+                  {isOutOfStock ? (
+                    <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-lg font-semibold">
+                      <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                      Out of Stock
+                    </div>
+                  ) : isLowStock ? (
+                    <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-lg font-semibold">
+                      <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                      Only {product.stock} left in stock - Order soon!
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-lg font-semibold">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      In Stock ({product.stock} available)
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Description */}
               {product.description && (
@@ -203,51 +242,69 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Quantity Selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-3">Quantity:</label>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleQuantityChange(-1)}
-                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                  disabled={quantity <= 1}
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (value >= 1) {
-                      setQuantity(value);
-                    }
-                  }}
-                  className="w-16 h-10 text-center border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-                  min="1"
-                />
-                <button
-                  onClick={() => handleQuantityChange(1)}
-                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                >
-                  +
-                </button>
+            {!isOutOfStock && (
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-3">Quantity:</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleQuantityChange(-1)}
+                    className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      const maxStock = product.stock || 999;
+                      if (value >= 1 && value <= maxStock) {
+                        setQuantity(value);
+                      }
+                    }}
+                    className="w-16 h-10 text-center border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
+                    min="1"
+                    max={product.stock || 999}
+                  />
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={product.stock !== undefined && quantity >= product.stock}
+                  >
+                    +
+                  </button>
+                </div>
+                {product.stock !== undefined && quantity >= product.stock && (
+                  <p className="text-sm text-orange-600 mt-2">Maximum available quantity reached</p>
+                )}
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-4">
               <button 
                 onClick={handleAddToCart}
+                disabled={isOutOfStock}
                 className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all ${
-                  addedToCart 
+                  isOutOfStock
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : addedToCart 
                     ? 'bg-green-500 text-white' 
                     : 'bg-orange-500 text-white hover:bg-orange-600'
                 }`}
               >
-                {addedToCart ? '✓ ADDED TO CART' : 'ADD TO CART'}
+                {isOutOfStock ? 'OUT OF STOCK' : addedToCart ? '✓ ADDED TO CART' : 'ADD TO CART'}
               </button>
-              <button className="w-12 h-12 border-2 border-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
-                <Heart className="w-5 h-5" />
+              <button 
+                onClick={handleToggleWishlist}
+                className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-all ${
+                  inWishlist 
+                    ? 'border-red-500 bg-red-50 text-red-500' 
+                    : 'border-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
               </button>
             </div>
 
@@ -257,6 +314,9 @@ export default function ProductDetailPage() {
               <div>Category: {product.category}</div>
               <div>Brand: {product.brand}</div>
               <div>Pet Type: {product.petType}</div>
+              {product.stock !== undefined && (
+                <div>Stock: {product.stock} units</div>
+              )}
               {product.tags && product.tags.length > 0 && (
                 <div>Tags: {product.tags.join(', ')}</div>
               )}

@@ -1,7 +1,8 @@
 import { Phone, Mail, MapPin, Search, Heart, ShoppingCart, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import CartSidebar from './CartSidebar';
 import logo from '../assets/Group.png';
 
@@ -11,10 +12,12 @@ interface HeaderProps {
 
 export default function Header({ currentPage: _ }: HeaderProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { getTotalItems, toggleCart } = useCart();
+  const { wishlistItems } = useWishlist();
 
   // Detect scroll position
   useEffect(() => {
@@ -135,8 +138,16 @@ export default function Header({ currentPage: _ }: HeaderProps) {
             <button className="p-2 hover:text-primary hidden md:block">
               <Search className="w-5 h-5 md:hidden" />
             </button>
-            <button className="p-2 hover:text-primary relative hidden md:block group transition-all duration-300 hover:scale-110">
+            <button 
+              onClick={() => navigate('/wishlist')}
+              className="p-2 hover:text-primary relative hidden md:block group transition-all duration-300 hover:scale-110"
+            >
               <Heart className="w-5 h-5 lg:w-6 lg:h-6 group-hover:fill-primary transition-all" />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md animate-scale-in">
+                  {wishlistItems.length}
+                </span>
+              )}
             </button>
             <button 
               onClick={toggleCart}

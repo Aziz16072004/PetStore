@@ -10,6 +10,7 @@ export type Product = {
   petType: string;
   rating?: number;
   description?: string;
+  stock?: number;
 };
 
 export const allProducts: Product[] = [

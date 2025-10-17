@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Search, Loader2 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
@@ -9,7 +9,17 @@ import uncoloredVector from '../assets/uncoloredVector.png';
 import headerImg from '../assets/header.png';
 import bgHero from '../assets/HomePageImage.png';
 import nesr from '../assets/nesr.png';
+import petsImg from '../assets/cute-pet.png';
 import { API_BASE_URL } from '../config/api';
+
+interface PetCategory {
+  _id: string;
+  name: string;
+  image: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export default function ShopPage() {
   const [searchParams] = useSearchParams();
@@ -24,6 +34,10 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('latest');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [petCategories, setPetCategories] = useState<PetCategory[]>([]);
+  const [loadingPets, setLoadingPets] = useState(true);
+  const [errorPets, setErrorPets] = useState<string | null>(null);
+  const petScrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch products from API
   useEffect(() => {
@@ -60,6 +74,31 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
+  // Fetch pet categories from API
+  useEffect(() => {
+    const fetchPetCategories = async () => {
+      try {
+        setLoadingPets(true);
+        setErrorPets(null);
+        const response = await fetch(`${API_BASE_URL}/categories/pet-categories`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch pet categories: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setPetCategories(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setErrorPets(err instanceof Error ? err.message : 'Failed to load pet categories');
+        console.error('Error fetching pet categories:', err);
+      } finally {
+        setLoadingPets(false);
+      }
+    };
+
+    fetchPetCategories();
+  }, []);
+
   // Apply category and pet type filters from URL parameters
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -71,13 +110,12 @@ export default function ShopPage() {
     if (petTypeParam) {
       setSelectedPetType(petTypeParam);
       // Find the index of the pet type to set the active index
-      const pets = ['Cat', 'Hamster', 'Dog', 'Parrot', 'Rabbit', 'Turtle'];
-      const petIndex = pets.findIndex(pet => pet === petTypeParam);
+      const petIndex = petCategories.findIndex(pet => pet.name === petTypeParam);
       if (petIndex !== -1) {
         setActiveIndex(petIndex);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, petCategories]);
 
   // Get unique categories with counts
   const categories = useMemo(() => {
@@ -222,6 +260,20 @@ export default function ShopPage() {
     setPriceRange([5, 399]);
   };
 
+  const scrollPets = (direction: 'left' | 'right') => {
+    if (petScrollRef.current) {
+      const scrollAmount = 300;
+      const newScrollLeft = direction === 'left'
+        ? petScrollRef.current.scrollLeft - scrollAmount
+        : petScrollRef.current.scrollLeft + scrollAmount;
+      
+      petScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -291,50 +343,81 @@ export default function ShopPage() {
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold">Shop by pet</h2>
           <div className="flex gap-2">
-            <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800">
+            <button 
+              onClick={() => scrollPets('left')}
+              className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800"
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800">
+            <button 
+              onClick={() => scrollPets('right')}
+              className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800"
+            >
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {[
-            { name: 'Cat', color: 'from-primary to-secondary' ,image:'https://i.imgur.com/iZJngp1.png' },
-            { name: 'Hamster', color: 'from-gray-300 to-gray-400' , image:'https://i.imgur.com/IP5khxF.png' },
-            { name: 'Dog', color: 'from-gray-300 to-gray-400' ,image:'https://i.imgur.com/m5N6FF5.png'},
-            { name: 'Parrot', color: 'from-gray-300 to-gray-400' ,image:'https://i.imgur.com/MgvcYEX.png'},
-            { name: 'Rabbit', color: 'from-gray-300 to-gray-400' ,image:'https://i.imgur.com/BD9Av47.png' },
-            { name: 'Turtle', color: 'from-gray-300 to-gray-400' ,image:'https://pngimg.com/uploads/turtle/turtle_PNG68.png' },
-          ].map((pet, index) => (
-            <TiltedCard
-              key={index}
-              containerHeight="auto"
-              containerWidth="100%"
-              imageHeight="auto"
-              imageWidth="auto"
-              scaleOnHover={1.1}
-              rotateAmplitude={30}
-              showMobileWarning={false}
-              showTooltip={false}
-              captionText={`Shop ${pet.name}`}
-              onClick={() => {
-                setActiveIndex(index);
-                setSelectedPetType(selectedPetType === pet.name ? null : pet.name);
-              }}
+        {loadingPets ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+          </div>
+        ) : errorPets ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{errorPets}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
             >
-              <div className="vectorBox cursor-pointer">
-                <img
-                  src={index === activeIndex ? coloredVector : uncoloredVector}
-                  alt={pet.name}
-                />
-                <img src={pet.image} className="vectorBoxImg" alt={pet.name} />
+              Retry
+            </button>
+          </div>
+        ) : petCategories.length > 0 ? (
+          <div 
+            ref={petScrollRef}
+            className="flex overflow-x-auto gap-6 pb-4 pt-4 scrollbar-hide scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {petCategories.map((pet, index) => (
+              <div key={pet._id} className="flex-shrink-0 w-40">
+                <TiltedCard
+                  containerHeight="auto"
+                  containerWidth="100%"
+                  imageHeight="auto"
+                  imageWidth="auto"
+                  scaleOnHover={1.1}
+                  rotateAmplitude={30}
+                  showMobileWarning={false}
+                  showTooltip={false}
+                  captionText={`Shop ${pet.name}`}
+                  onClick={() => {
+                    setActiveIndex(index);
+                    setSelectedPetType(selectedPetType === pet.name ? null : pet.name);
+                  }}
+                >
+                  <div className="vectorBox cursor-pointer">
+                    <img
+                      src={index === activeIndex ? coloredVector : uncoloredVector}
+                      alt={pet.name}
+                    />
+                    <img 
+                      src={pet.image} 
+                      className="vectorBoxImg" 
+                      alt={pet.name}
+                      onError={(e) => {
+                        e.currentTarget.src = petsImg;
+                      }}
+                    />
+                  </div>
+                </TiltedCard>
               </div>
-            </TiltedCard>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No pet categories available at the moment.</p>
+          </div>
+        )}
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -484,6 +567,7 @@ export default function ShopPage() {
                     price={product.price}
                     image={product.image}
                     id={product.id}
+                    stock={product.stock}
                   />
                 ))}
               </div>

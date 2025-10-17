@@ -2,19 +2,15 @@ import { ArrowLeft, ArrowRight, Dog, Fish, Award, Heart, Loader2 } from 'lucide-
 import { useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
 import ProductCard from '../components/ProductCard';
-import { bestSellingRow1, bestSellingRow2, Product } from '../data/products';
+import { Product } from '../data/products';
 import TiltedCard from '../components/TiltedCard';
-import furnitureImg from '../assets/Furniture.jpeg';
 import petsImg from '../assets/cute-pet.png';
-import bagsImg from '../assets/dogsBags2.jpeg';
-import foodImg from '../assets/foodCategory.jpeg';
 import coloredVector from '../assets/coloredVector.png';
-// import catImg from '../assets/catImage.png';
 import accessoriesImg from '../assets/petsAccessories.jpeg';
 import uncoloredVector from '../assets/uncoloredVector.png';
 import { API_BASE_URL } from '../config/api';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BlogModal from '../components/BlogModal';
 
 interface BlogPost {
@@ -32,6 +28,25 @@ interface BlogPost {
   updatedAt?: string;
 }
 
+interface PetCategory {
+  _id: string;
+  name: string;
+  image: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface ProductCategory {
+  _id: string;
+  name: string;
+  image: string;
+  description?: string;
+  productCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export default function HomePage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -42,10 +57,49 @@ export default function HomePage() {
   const [errorBlogs, setErrorBlogs] = useState<string | null>(null);
   const [selectedBlogPost, setSelectedBlogPost] = useState<BlogPost | null>(null);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
+  const [petCategories, setPetCategories] = useState<PetCategory[]>([]);
+  const [loadingPets, setLoadingPets] = useState(true);
+  const [errorPets, setErrorPets] = useState<string | null>(null);
+  const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
+  const [loadingProductCategories, setLoadingProductCategories] = useState(true);
+  const [errorProductCategories, setErrorProductCategories] = useState<string | null>(null);
+  const [bestSellingProducts, setBestSellingProducts] = useState<Product[]>([]);
+  const [loadingBestSelling, setLoadingBestSelling] = useState(true);
+  const [errorBestSelling, setErrorBestSelling] = useState<string | null>(null);
   const navigate = useNavigate();
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const petScrollRef = useRef<HTMLDivElement>(null);
 
   const handleCategoryClick = (categoryName: string) => {
     navigate(`/shop?category=${encodeURIComponent(categoryName)}`);
+  };
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = 400;
+      const newScrollLeft = direction === 'left'
+        ? categoryScrollRef.current.scrollLeft - scrollAmount
+        : categoryScrollRef.current.scrollLeft + scrollAmount;
+      
+      categoryScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollPets = (direction: 'left' | 'right') => {
+    if (petScrollRef.current) {
+      const scrollAmount = 300;
+      const newScrollLeft = direction === 'left'
+        ? petScrollRef.current.scrollLeft - scrollAmount
+        : petScrollRef.current.scrollLeft + scrollAmount;
+      
+      petScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
   };
 
   // Fetch featured products from API
@@ -105,6 +159,95 @@ export default function HomePage() {
     fetchBlogPosts();
   }, []);
 
+  // Fetch pet categories from API
+  useEffect(() => {
+    const fetchPetCategories = async () => {
+      try {
+        setLoadingPets(true);
+        setErrorPets(null);
+        const response = await fetch(`${API_BASE_URL}/categories/pet-categories`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch pet categories: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setPetCategories(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setErrorPets(err instanceof Error ? err.message : 'Failed to load pet categories');
+        console.error('Error fetching pet categories:', err);
+      } finally {
+        setLoadingPets(false);
+      }
+    };
+
+    fetchPetCategories();
+  }, []);
+
+  // Fetch product categories from API
+  useEffect(() => {
+    const fetchProductCategories = async () => {
+      try {
+        setLoadingProductCategories(true);
+        setErrorProductCategories(null);
+        const response = await fetch(`${API_BASE_URL}/categories/product-categories`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch product categories: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setProductCategories(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setErrorProductCategories(err instanceof Error ? err.message : 'Failed to load product categories');
+        console.error('Error fetching product categories:', err);
+      } finally {
+        setLoadingProductCategories(false);
+      }
+    };
+
+    fetchProductCategories();
+  }, []);
+
+  // Fetch best-selling products from API
+  useEffect(() => {
+    const fetchBestSellingProducts = async () => {
+      try {
+        setLoadingBestSelling(true);
+        setErrorBestSelling(null);
+        
+        const response = await fetch(`${API_BASE_URL}/items/best-selling/list?limit=10`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API Error Response:', errorText);
+          throw new Error(`Failed to fetch best-selling products: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Best-selling products response:', data);
+        
+        // Handle both array and object responses
+        const products = Array.isArray(data) ? data : data.products || data.items || [];
+        
+        // Normalize product IDs and limit to 10
+        const normalizedProducts = products.slice(0, 10).map((product: any) => ({
+          ...product,
+          id: product.id || product._id || product.productId
+        }));
+        
+        setBestSellingProducts(normalizedProducts);
+      } catch (err) {
+        setErrorBestSelling(err instanceof Error ? err.message : 'Failed to load best-selling products');
+        console.error('Error fetching best-selling products:', err);
+      } finally {
+        setLoadingBestSelling(false);
+      }
+    };
+
+    fetchBestSellingProducts();
+  }, []);
+
   return (
     <div>
       <Hero
@@ -121,59 +264,92 @@ export default function HomePage() {
             <h2 className="text-4xl font-display font-bold mb-2 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Browse by category</h2>
             <p className="text-gray-600">Find everything your pet needs</p>
           </div>
-          <div className="flex gap-3">
-            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
+          {productCategories.length > 4 && (
+            <div className="flex gap-3">
+              <button 
+                onClick={() => scrollCategories('left')}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => scrollCategories('right')}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[{
-            img: accessoriesImg,
-            title: 'Accessories',
-            count: '94 products'
-          }, {
-            img: foodImg,
-            title: 'Food',
-            count: '94 products'
-          }, {
-            img: furnitureImg,
-            title: 'Furniture',
-            count: '23 products'
-          }, {
-            img: bagsImg,
-            title: 'Bags',
-            count: '19 products'
-          }].map((item, idx) => (
-            <TiltedCard
-              key={idx}
-              containerHeight="auto"
-              containerWidth="100%"
-              imageHeight="auto"
-              imageWidth="auto"
-              scaleOnHover={1.1}
-              rotateAmplitude={30}
-              showMobileWarning={false}
-              showTooltip={false}
-              captionText={item.title}
-              onClick={() => handleCategoryClick(item.title)}
+        {loadingProductCategories ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+          </div>
+        ) : errorProductCategories ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{errorProductCategories}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
             >
-              <div className="rounded-2xl overflow-hidden cursor-pointer hover:shadow-card transition-all duration-300 border border-gray-100 hover:border-primary/30 group">
-                <div className="overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                  <img src={item.img} alt={item.title} className="w-full h-48 object-contain group-hover:scale-110 transition-transform duration-500" />
-                </div>
-                <div className="bg-white p-5">
-                  <h3 className="font-bold mb-1 text-lg group-hover:text-primary transition-colors">{item.title}</h3>
-                  <p className="text-sm text-gray-500">{item.count}</p>
-                </div>
+              Retry
+            </button>
+          </div>
+        ) : productCategories.length > 0 ? (
+          <div 
+            ref={categoryScrollRef}
+            className={`${
+              productCategories.length > 4 
+                ? 'flex overflow-x-auto gap-6 pb-4 scrollbar-hide scroll-smooth' 
+                : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'
+            }`}
+            style={productCategories.length > 4 ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}
+          >
+            {productCategories.map((category) => (
+              <div 
+                key={category._id}
+                className={productCategories.length > 4 ? 'flex-shrink-0 w-72' : ''}
+              >
+                <TiltedCard
+                  containerHeight="auto"
+                  containerWidth="100%"
+                  imageHeight="auto"
+                  imageWidth="auto"
+                  scaleOnHover={1.1}
+                  rotateAmplitude={30}
+                  showMobileWarning={false}
+                  showTooltip={false}
+                  captionText={category.name}
+                  onClick={() => handleCategoryClick(category.name)}
+                >
+                  <div className="rounded-2xl overflow-hidden cursor-pointer hover:shadow-card transition-all duration-300 border border-gray-100 hover:border-primary/30 group">
+                    <div className="overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                      <img 
+                        src={category.image} 
+                        alt={category.name} 
+                        className="w-full h-48 object-contain group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          e.currentTarget.src = accessoriesImg;
+                        }}
+                      />
+                    </div>
+                    <div className="bg-white p-5">
+                      <h3 className="font-bold mb-1 text-lg group-hover:text-primary transition-colors">{category.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        {category.productCount ? `${category.productCount} products` : 'View products'}
+                      </p>
+                    </div>
+                  </div>
+                </TiltedCard>
               </div>
-            </TiltedCard>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No product categories available at the moment.</p>
+          </div>
+        )}
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -199,7 +375,7 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredProducts.map((p) => (
-              <ProductCard key={p.id} id={p.id} name={p.name} image={p.image} price={p.price} />
+              <ProductCard key={p.id} id={p.id} name={p.name} image={p.image} price={p.price} stock={p.stock} />
             ))}
           </div>
         )}
@@ -267,16 +443,39 @@ export default function HomePage() {
           <h2 className="text-4xl font-display font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Best selling products</h2>
           <p className="text-gray-600 text-lg">Customer favorites that pets love</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          {bestSellingRow1.map((p) => (
-            <ProductCard key={p.id} id={p.id} name={p.name} price={p.price} />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {bestSellingRow2.map((p) => (
-            <ProductCard key={p.id} id={p.id} name={p.name} price={p.price} />
-          ))}
-        </div>
+        
+        {loadingBestSelling ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+          </div>
+        ) : errorBestSelling ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{errorBestSelling}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : bestSellingProducts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {bestSellingProducts.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                id={product.id} 
+                name={product.name} 
+                price={product.price}
+                image={product.image}
+                stock={product.stock}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No best-selling products available at the moment.</p>
+          </div>
+        )}
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -286,53 +485,81 @@ export default function HomePage() {
             <p className="text-gray-600">Find products for your specific pet</p>
           </div>
           <div className="flex gap-3">
-            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
+            <button 
+              onClick={() => scrollPets('left')}
+              className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <button className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110">
+            <button 
+              onClick={() => scrollPets('right')}
+              className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center hover:shadow-glow transition-all duration-300 transform hover:scale-110"
+            >
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
-          
-          
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
-          {[
-            { name: 'Cat', color: 'from-primary to-secondary' ,image:'https://i.imgur.com/iZJngp1.png' },
-            { name: 'Hamster', color: 'from-gray-300 to-gray-400' , image:'https://i.imgur.com/IP5khxF.png' },
-            { name: 'Dog', color: 'from-gray-300 to-gray-400' ,image:'https://i.imgur.com/m5N6FF5.png'},
-            { name: 'Parrot', color: 'from-gray-300 to-gray-400' ,image:'https://i.imgur.com/MgvcYEX.png'},
-            { name: 'Rabbit', color: 'from-gray-300 to-gray-400' ,image:'https://i.imgur.com/BD9Av47.png' },
-            { name: 'Turtle', color: 'from-gray-300 to-gray-400' ,image:'https://pngimg.com/uploads/turtle/turtle_PNG68.png' },
-          ].map((pet, index) => (
-            <TiltedCard
-              key={index}
-              containerHeight="auto"
-              containerWidth="100%"
-              imageHeight="auto"
-              imageWidth="auto"
-              scaleOnHover={1.1}
-              rotateAmplitude={30}
-              showMobileWarning={false}
-              showTooltip={false}
-              captionText={`Shop ${pet.name}`}
-              onClick={() => navigate(`/shop?petType=${encodeURIComponent(pet.name)}`)}
+        {loadingPets ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+          </div>
+        ) : errorPets ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{errorPets}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
             >
-              <div
-                className="vectorBox cursor-pointer"
-                onClick={() => setActiveIndex(index)}
-              >
-                <img
-                  src={index === activeIndex ? coloredVector : uncoloredVector}
-                  alt={pet.name}
-                />
-                <img src={pet.image} className="vectorBoxImg" alt={pet.name} />
+              Retry
+            </button>
+          </div>
+        ) : petCategories.length > 0 ? (
+          <div 
+            ref={petScrollRef}
+            className="flex overflow-x-auto gap-6 pb-4 pt-4 scrollbar-hide scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {petCategories.map((pet, index) => (
+              <div key={pet._id} className="flex-shrink-0 w-40">
+                <TiltedCard
+                  containerHeight="auto"
+                  containerWidth="100%"
+                  imageHeight="auto"
+                  imageWidth="auto"
+                  scaleOnHover={1.1}
+                  rotateAmplitude={30}
+                  showMobileWarning={false}
+                  showTooltip={false}
+                  captionText={`Shop ${pet.name}`}
+                  onClick={() => navigate(`/shop?petType=${encodeURIComponent(pet.name)}`)}
+                >
+                  <div
+                    className="vectorBox cursor-pointer"
+                    onClick={() => setActiveIndex(index)}
+                  >
+                    <img
+                      src={index === activeIndex ? coloredVector : uncoloredVector}
+                      alt={pet.name}
+                    />
+                    <img 
+                      src={pet.image} 
+                      className="vectorBoxImg" 
+                      alt={pet.name}
+                      onError={(e) => {
+                        e.currentTarget.src = petsImg;
+                      }}
+                    />
+                  </div>
+                </TiltedCard>
               </div>
-            </TiltedCard>
-          ))}
-
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No pet categories available at the moment.</p>
+          </div>
+        )}
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
