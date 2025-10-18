@@ -285,7 +285,7 @@ export default function HomePage() {
         subtitle="everything you need"
         description="Semis ipsum et parturient eget aliquet et tortor lectus. Tellus, fuisee neque scelerisque non et masa."
         buttonText="Shop Now"
-        onButtonClick={() => window.location.href = '/shop'}
+        onButtonClick={() => navigate('/shop')}
       />
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

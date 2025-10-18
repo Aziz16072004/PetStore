@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { ShoppingBag, CreditCard, MapPin, User, Mail, Phone, ArrowLeft } from 'lucide-react';
 import { submitOrder } from '../services/orderService';
-import { API_BASE_URL } from '../config/api';
 import { CheckoutFormData } from '../types/checkout';
 
 export default function CheckoutPage() {
@@ -138,6 +137,8 @@ export default function CheckoutPage() {
       setOrderId(response.orderId);
       setOrderComplete(true);
 
+      // External socket emit removed per requirements; order is posted via API only
+
       // Immediate best-effort scroll to top
       try {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -148,23 +149,7 @@ export default function CheckoutPage() {
         topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch {}
 
-      // Create notification for new order (best-effort)
-      try {
-        await fetch(`${API_BASE_URL}/notifications`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: 'New order created',
-            message: `Order #${response.orderId} has been created`,
-            type: 'success',
-            orderId: response.orderId,
-            read: false,
-          }),
-        });
-      } catch (e) {
-        // Non-blocking: log and continue
-        console.error('Failed to create notification:', e);
-      }
+      // Client-side notification disabled to prevent duplicates; backend handles it
 
       clearCart();
     } catch (error) {

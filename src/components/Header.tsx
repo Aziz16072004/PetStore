@@ -33,6 +33,19 @@ export default function Header({ currentPage: _ }: HeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = original || '';
+    }
+    return () => {
+      document.body.style.overflow = original || '';
+    };
+  }, [mobileMenuOpen]);
+
   // Handle search
   const handleSearch = (e?: React.FormEvent) => {
     if (e) {
@@ -185,6 +198,8 @@ export default function Header({ currentPage: _ }: HeaderProps) {
             <button
               className="p-2 lg:hidden transition-all duration-200 hover:bg-gray-100 rounded-lg"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
             >
               <div className="transition-transform duration-200">
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -194,13 +209,13 @@ export default function Header({ currentPage: _ }: HeaderProps) {
           
         </div>
         {/* Mobile Menu with smooth slide animation */}
-        <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-out ${
           mobileMenuOpen 
-            ? 'max-h-96 opacity-100 translate-y-0' 
-            : 'max-h-0 opacity-0 -translate-y-4'
+            ? 'max-h-[80vh] opacity-100 translate-y-0' 
+            : 'max-h-0 opacity-0 -translate-y-2'
         }`}>
-          <div className="bg-white  rounded-b-[50px] lg:rounded-b-[75px] ">
-            <nav className="flex flex-col py-6 px-6 space-y-3">
+          <div className="bg-white rounded-b-[50px] lg:rounded-b-[75px] border-t border-gray-100 shadow-sm">
+            <nav className="flex flex-col py-5 px-6 space-y-2">
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
