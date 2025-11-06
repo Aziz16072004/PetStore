@@ -1,5 +1,5 @@
 import { MapPin, Mail, Phone, Clock, Send, CheckCircle, AlertCircle, Loader2, Package } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import headerImg from '../assets/vecteezy_hamster-with_24704812.png';
 import bgHero from '../assets/HomePageImage.png';
 import contactMapImage from '../assets/image.png';
@@ -36,16 +36,6 @@ export default function ContactPage() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showOrderId, setShowOrderId] = useState(false);
   const [messageLength, setMessageLength] = useState(0);
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        console.log("Latitude:", pos.coords.latitude);
-        console.log("Longitude:", pos.coords.longitude);
-      },
-      (err) => console.error(err)
-    );
-  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};

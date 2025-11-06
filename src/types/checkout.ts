@@ -13,7 +13,7 @@ export interface CheckoutFormData {
   zipCode: string;
   country: string;
 
-  // Payment Information
+  // Payment Information (optional usage)
   cardNumber: string;
   cardName: string;
   expiryDate: string; // Format: MM/YY
@@ -35,7 +35,6 @@ export interface Order {
   customer: CustomerInfo;
   shippingAddress: ShippingAddress;
   items: OrderItem[];
-  payment: PaymentInfo;
   pricing: OrderSummary;
   status: OrderStatus;
 }
@@ -66,15 +65,6 @@ export interface OrderItem {
   image?: string;
   category: string;
   subtotal: number; // price * quantity
-}
-
-// Payment Information (for processing)
-export interface PaymentInfo {
-  cardNumber: string; // Should be encrypted/tokenized in production
-  cardholderName: string;
-  expiryDate: string;
-  cvv: string; // Should never be stored in production
-  paymentMethod: 'credit_card' | 'debit_card';
 }
 
 // Order Status
@@ -112,12 +102,6 @@ export interface OrderResponse {
   order?: Order;
 }
 
-export interface PaymentResponse {
-  success: boolean;
-  transactionId: string;
-  message: string;
-}
-
 // Example Usage:
 /*
 const checkoutData: CheckoutFormData = {
@@ -129,11 +113,7 @@ const checkoutData: CheckoutFormData = {
   city: 'New York',
   state: 'NY',
   zipCode: '10001',
-  country: 'USA',
-  cardNumber: '1234567890123456',
-  cardName: 'John Doe',
-  expiryDate: '12/25',
-  cvv: '123'
+  country: 'USA'
 };
 
 const order: Order = {
@@ -161,13 +141,6 @@ const order: Order = {
     category: item.category,
     subtotal: item.price * item.quantity
   })),
-  payment: {
-    cardNumber: checkoutData.cardNumber,
-    cardholderName: checkoutData.cardName,
-    expiryDate: checkoutData.expiryDate,
-    cvv: checkoutData.cvv,
-    paymentMethod: 'credit_card'
-  },
   pricing: {
     subtotal: 100.00,
     shipping: 9.99,

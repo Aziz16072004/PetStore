@@ -54,6 +54,7 @@ export default function CheckoutPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [paymentMethod, setPaymentMethod] = useState<'store_credit' | 'credit_card'>('credit_card');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -84,32 +85,42 @@ export default function CheckoutPage() {
     if (!formData.zipCode.trim()) newErrors.zipCode = 'ZIP code is required';
     if (!formData.country.trim()) newErrors.country = 'Country is required';
 
-    // Payment
-    if (!formData.cardNumber.trim()) {
-      newErrors.cardNumber = 'Card number is required';
-    } else if (!/^\d{16}$/.test(formData.cardNumber.replace(/\s/g, ''))) {
-      newErrors.cardNumber = 'Card number must be 16 digits';
-    }
-    if (!formData.cardName.trim()) newErrors.cardName = 'Cardholder name is required';
-    if (!formData.expiryDate.trim()) {
-      newErrors.expiryDate = 'Expiry date is required';
-    } else if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
-      newErrors.expiryDate = 'Format must be MM/YY';
-    }
-    if (!formData.cvv.trim()) {
-      newErrors.cvv = 'CVV is required';
-    } else if (!/^\d{3,4}$/.test(formData.cvv)) {
-      newErrors.cvv = 'CVV must be 3-4 digits';
+    // Payment - validate only when paying by card
+    if (paymentMethod === 'credit_card') {
+      if (!formData.cardNumber.trim()) {
+        newErrors.cardNumber = 'Card number is required';
+      } else if (!/^\d{16}$/.test(formData.cardNumber.replace(/\s/g, ''))) {
+        newErrors.cardNumber = 'Card number must be 16 digits';
+      }
+      if (!formData.cardName.trim()) newErrors.cardName = 'Cardholder name is required';
+      if (!formData.expiryDate.trim()) {
+        newErrors.expiryDate = 'Expiry date is required';
+      } else if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
+        newErrors.expiryDate = 'Format must be MM/YY';
+      }
+      if (!formData.cvv.trim()) {
+        newErrors.cvv = 'CVV is required';
+      } else if (!/^\d{3,4}$/.test(formData.cvv)) {
+        newErrors.cvv = 'CVV must be 3-4 digits';
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // Mock card payment processor; replace with real gateway as needed
+  const processCardPayment = async (): Promise<'paid' | 'failed'> => {
+    // TODO: integrate real gateway and return actual status
+    return 'paid';
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      // Scroll to top to show validation errors
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -130,8 +141,21 @@ export default function CheckoutPage() {
         total,
       };
 
-      // Submit order to API
-      const response = await submitOrder(formData, cartItems, pricing);
+      // Determine payment status and prepare payload
+      let paymentStatus: 'unpaid' | 'paid' | 'failed' = 'unpaid';
+      if (paymentMethod === 'credit_card') {
+        paymentStatus = await processCardPayment();
+      } else {
+        paymentStatus = 'unpaid';
+      }
+
+      // Submit order to API with payment method and status
+      const response = await submitOrder(
+        formData,
+        cartItems,
+        pricing,
+        { paymentMethod, paymentStatus }
+      );
 
       // Response is always successful if no error was thrown
       setOrderId(response.orderId);
@@ -225,7 +249,7 @@ export default function CheckoutPage() {
   const total = subtotal + shipping + tax;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 pt-28 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <button
@@ -242,6 +266,25 @@ export default function CheckoutPage() {
           {/* Checkout Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Validation Error Summary */}
+              {Object.keys(errors).length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-red-800 mb-1">Please fix the following errors:</h3>
+                      <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
+                        {Object.entries(errors).map(([field, error]) => (
+                          <li key={field}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Personal Information */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-3 mb-6">
@@ -421,12 +464,43 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Payment Information */}
+              {/* Payment Method */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-4">
                   <CreditCard className="w-6 h-6 text-orange-500" />
-                  <h2 className="text-xl font-bold">Payment Information</h2>
+                  <h2 className="text-xl font-bold">Payment</h2>
                 </div>
+                <div className="flex gap-3 mb-6">
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg border ${paymentMethod === 'store_credit' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700 border-gray-300'}`}
+                    onClick={() => setPaymentMethod('store_credit')}
+                  >
+                    Store Credit
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg border ${paymentMethod === 'credit_card' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700 border-gray-300'}`}
+                    onClick={() => setPaymentMethod('credit_card')}
+                  >
+                    Credit Card
+                  </button>
+                </div>
+
+                {paymentMethod === 'store_credit' && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm text-blue-800 font-medium">
+                        You'll pay using store credit. We'll mark it paid if your balance covers the total.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === 'credit_card' && (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -506,6 +580,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
 
               {/* API Error Message */}

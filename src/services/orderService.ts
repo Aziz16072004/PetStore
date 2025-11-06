@@ -33,13 +33,6 @@ export const createOrderPayload = (
       category: item.category,
       subtotal: item.price * item.quantity,
     })),
-    payment: {
-      cardNumber: formData.cardNumber.slice(-4), // Only send last 4 digits for security
-      cardholderName: formData.cardName,
-      expiryDate: formData.expiryDate,
-      cvv: '***', // Never send actual CVV to backend
-      paymentMethod: 'credit_card' as const,
-    },
     pricing,
     status: 'pending' as const,
   };
@@ -51,7 +44,8 @@ export const createOrderPayload = (
 export const submitOrder = async (
   formData: CheckoutFormData,
   cartItems: CartItem[],
-  pricing: { subtotal: number; shipping: number; tax: number; total: number }
+  pricing: { subtotal: number; shipping: number; tax: number; total: number },
+  payment: { paymentMethod: 'store_credit' | 'credit_card'; paymentStatus: 'unpaid' | 'paid' | 'failed' }
 ): Promise<OrderResponse> => {
   try {
     // Create a simplified payload that matches backend expectations
@@ -69,11 +63,16 @@ export const submitOrder = async (
       zipCode: formData.zipCode,
       country: formData.country,
       
-      // Payment Information (flat structure)
-      cardNumber: formData.cardNumber.slice(-4),
-      cardholderName: formData.cardName,
-      expiryDate: formData.expiryDate,
-      paymentMethod: 'credit_card',
+      // Payment fields
+      paymentMethod: payment.paymentMethod,
+      paymentStatus: payment.paymentStatus,
+      ...(payment.paymentMethod === 'credit_card'
+        ? {
+            cardNumber: (formData.cardNumber || '').slice(-4),
+            cardholderName: formData.cardName || '',
+            expiryDate: formData.expiryDate || '',
+          }
+        : {}),
       
       // Order Items
       items: cartItems.map((item) => ({
