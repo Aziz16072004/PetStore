@@ -48,6 +48,9 @@ export default function ProductCard({ name, price, image, id, stock }: ProductCa
               src={image} 
               alt={name} 
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+              loading="lazy"
+              decoding="async"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
             <svg viewBox="0 0 200 200" className="w-3/4 h-3/4 text-gray-300 group-hover:text-gray-400 transition-colors">

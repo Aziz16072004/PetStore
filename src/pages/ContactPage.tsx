@@ -146,7 +146,14 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="text-primary font-medium mb-4">Pet Shop</div>
-              <img src={nesr} className="absolute top-30 right-0  "/>
+              <img
+                src={nesr}
+                className="absolute top-30 right-0"
+                alt="decoration"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 1024px) 30vw, 20vw"
+              />
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight mb-6 relative z-10">
                 If animals could talk,<br />they'd talk about us!
               </h1>
@@ -160,8 +167,22 @@ export default function ContactPage() {
 
             <div className="relative">
             <div className="heroImage">
-              <img src={bgHero} alt='heroBg' className='bgHero absolute [top:20px] inset-0 z-10 transform [scale:1.0]' />
-              <img src={headerImg} alt="Hero" className="[scale:.6] object-contain heroDog "  />
+              <img
+                src={bgHero}
+                alt='heroBg'
+                className='bgHero absolute [top:20px] inset-0 z-10 transform [scale:1.0]'
+                loading="eager"
+                decoding="async"
+                sizes="100vw"
+              />
+              <img
+                src={headerImg}
+                alt="Hero"
+                className="[scale:.6] object-contain heroDog"
+                loading="eager"
+                decoding="async"
+                sizes="(max-width: 1024px) 80vw, 50vw"
+              />
             </div>
           </div>
           </div>
@@ -431,6 +452,9 @@ export default function ContactPage() {
             src={contactMapImage} 
             alt="Our location" 
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+            sizes="100vw"
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <a

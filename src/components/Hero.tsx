@@ -27,7 +27,14 @@ export default function Hero({ title, subtitle, description, buttonText, onButto
                 {smallTitle}
               </div>
             )}
-            <img src={nesr} className="absolute top-30 right-0 opacity-20 lg:opacity-30" alt="decoration" />
+            <img
+              src={nesr}
+              className="absolute top-30 right-0 opacity-20 lg:opacity-30"
+              alt="decoration"
+              loading="lazy"
+              decoding="async"
+              sizes="(max-width: 1024px) 30vw, 20vw"
+            />
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-tight mb-6 relative z-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
               {title}
@@ -53,8 +60,22 @@ export default function Hero({ title, subtitle, description, buttonText, onButto
             <div className="heroImage relative">
               {/* Decorative glow effect */}
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-full blur-3xl scale-75"></div>
-              <img src={bgHero} alt='heroBg' className='bgHero absolute [top:50px] inset-0 z-10 transform [scale:1.1] lg:[scale:1.3] animate-float' />
-              <img src={headerImg} alt="Hero" className="w-full h-full object-contain heroDog relative z-20 drop-shadow-2xl" />
+              <img
+                src={bgHero}
+                alt='heroBg'
+                className='bgHero absolute [top:50px] inset-0 z-10 transform [scale:1.1] lg:[scale:1.3] animate-float'
+                loading="eager"
+                decoding="async"
+                sizes="100vw"
+              />
+              <img
+                src={headerImg}
+                alt="Hero"
+                className="w-full h-full object-contain heroDog relative z-20 drop-shadow-2xl"
+                loading="eager"
+                decoding="async"
+                sizes="(max-width: 1024px) 80vw, 50vw"
+              />
             </div>
           </div>
         </div>

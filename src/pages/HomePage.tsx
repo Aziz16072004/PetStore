@@ -359,6 +359,9 @@ export default function HomePage() {
                         src={category.image} 
                         alt={category.name} 
                         className="w-full h-48 object-contain group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                        decoding="async"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         onError={(e) => {
                           e.currentTarget.src = accessoriesImg;
                         }}
@@ -637,6 +640,9 @@ export default function HomePage() {
                       src={pet.image} 
                       className="vectorBoxImg" 
                       alt={pet.name}
+                      loading="lazy"
+                      decoding="async"
+                      sizes="(max-width: 640px) 160px, 200px"
                       onError={(e) => {
                         e.currentTarget.src = petsImg;
                       }}
@@ -689,6 +695,9 @@ export default function HomePage() {
                     src={post.featuredImage} 
                     alt={post.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
+                    decoding="async"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     onError={(e) => {
                       // Fallback gradient if image fails to load
                       e.currentTarget.style.display = 'none';
